@@ -1,98 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Find the Budapest district!</title>
+  <title>Geo Guessing Game</title>
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     body, html { margin:0; padding:0; height:100% }
-    #map { width:100%; height:90% }
-    #info { padding: 10px; text-align:center }
+    #controls {
+      background: #f7f7f7;
+      padding: 8px;
+      text-align: center;
+      font-family: sans-serif;
+    }
+    #map { width:100%; height:calc(100% - 50px) }
     .incorrect { fill: rgba(255,0,0,0.5); }
-    .correct { fill: rgba(0,255,0,0.5); }
+    .correct   { fill: rgba(0,255,0,0.5); }
   </style>
 </head>
 <body>
-  <div id="map"></div>
-  <div id="info">
+
+  <div id="controls">
+    <label>
+      Select mode:
+      <select id="gameMode">
+        <option value="district">Budapest Districts</option>
+        <option value="region">Hungary Regions</option>
+      </select>
+    </label>
+    &nbsp;
+    <button id="next">Next</button>
+    &nbsp;
     <span id="prompt">Loading...</span>
-    <button id="next">Next district</button>
   </div>
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-  </script>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    let map = L.map('map').setView([47.5, 19.0], 11);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      { maxZoom: 18 }).addTo(map);
+    // Initialize map
+    const map = L.map('map').setView([47.5, 19.0], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18
+    }).addTo(map);
 
-    let districtsLayer, data, targetName, attempts;
-    const info = document.getElementById('prompt');
-    const btnNext = document.getElementById('next');
+    // Control elements
+    const modeSelect = document.getElementById('gameMode');
+    const btnNext    = document.getElementById('next');
+    const promptEl   = document.getElementById('prompt');
 
-    fetch('Budapest_districts.json')
-      .then(r => r.json())
-      .then(json => {
-        data = json;
-        startNewRound();
-      });
+    // State variables
+    let geojsonLayer = null;
+    let currentData  = null;
+    let nameProp     = 'name';
+    let targetName   = '';
+    let attempts     = 3;
 
+    // Style and click handlers for each feature
     function style(feature) {
       return { color: '#555', weight: 1, fillColor: 'white', fillOpacity: 0.5 };
     }
-
     function highlight(layer, cls) {
       layer.setStyle({ fillOpacity: 0.7 });
-      layer.getElement().classList.add(cls);
+      const el = layer.getElement();
+      if (el) el.classList.add(cls);
     }
-
-    function resetHighlight(layer) {
-      layer.setStyle({ fillOpacity: 0.5, fillColor: 'white' });
-      let el = layer.getElement();
-      if (el) el.classList.remove('incorrect','correct');
-    }
-
     function onEachFeature(feature, layer) {
       layer.on('click', () => {
         if (attempts === 0) return;
-        let name = feature.properties.name;
+        const name = feature.properties[nameProp];
         if (name === targetName) {
           highlight(layer, 'correct');
-          info.textContent = 'Correct! It is ' + name;
+          promptEl.textContent = '✅ Correct: ' + name;
           attempts = 0;
         } else {
           highlight(layer, 'incorrect');
-          info.textContent = 'Incorrect! It is ' + name;
           attempts--;
+          promptEl.textContent = '❌ That was ' + name + '. Attempts left: ' + attempts;
           if (attempts === 0) {
-            info.textContent = 'You have 0 attempts left! Correct location of: ' + targetName;
-            districtsLayer.eachLayer(l => {
-              if (l.feature.properties.name === targetName)
+            promptEl.textContent = '🏁 No attempts left. It was: ' + targetName;
+            geojsonLayer.eachLayer(l => {
+              if (l.feature.properties[nameProp] === targetName) {
                 highlight(l, 'correct');
+              }
             });
           }
         }
       });
-      layer.on('mouseout', () => {});
     }
 
+    // Start a new guessing round
     function startNewRound() {
-      if (districtsLayer) map.removeLayer(districtsLayer);
-      districtsLayer = L.geoJSON(data, {
+      if (!currentData) return;
+      if (geojsonLayer) {
+        map.removeLayer(geojsonLayer);
+      }
+      geojsonLayer = L.geoJSON(currentData, {
         style: style,
         onEachFeature: onEachFeature
       }).addTo(map);
 
-      let names = data.features.map(f => f.properties.name);
-      targetName = names[Math.floor(Math.random()*names.length)];
+      const names = currentData.features.map(f => f.properties[nameProp]);
+      targetName = names[Math.floor(Math.random() * names.length)];
       attempts = 3;
-      info.textContent = 'Find the district: ' + targetName + ' | Attempts: ' + attempts;
+      promptEl.textContent = '🔎 Find: ' + targetName + ' | Attempts: ' + attempts;
     }
 
-    btnNext.addEventListener('click', startNewRound);
+    // Load the appropriate GeoJSON based on mode
+    function loadGame() {
+      const mode = modeSelect.value;
+      let url, center, zoom;
+      if (mode === 'district') {
+        url      = 'Budapest_districts.json';
+        center   = [47.5, 19.0];
+        zoom     = 11;
+        nameProp = 'name';
+      } else {
+        url      = 'Hungary_regions.json';
+        center   = [47.2, 19.5];
+        zoom     = 7;
+        nameProp = 'name';
+      }
+      map.setView(center, zoom);
+      promptEl.textContent = 'Loading ' + mode + ' data…';
+      fetch(url)
+        .then(r => r.json())
+        .then(json => {
+          currentData = json;
+          startNewRound();
+        })
+        .catch(err => {promptEl.textContent = 'Error loading ' + url;
+          console.error(err);
+        });
+    }
+
+    // Event listeners
+    modeSelect.addEventListener('change', loadGame);
+    btnNext   .addEventListener('click' , startNewRound);
+
+    // Initial load
+    loadGame();
   </script>
 </body>
 </html>
