@@ -105,7 +105,7 @@
           attempts--;
           promptEl.textContent=`❌ ${nm}. Attempts left: ${attempts}`;
           if(attempts===0){
-            promptEl.textContent=`🏁 No attempts left. It was ${targetName}. Click correct region to continue.`;
+            promptEl.textContent=`🏁 No attempts left. It was ${targetName}. Click anywhere to continue.`;
             geojsonLayer.eachLayer(ll=>{
               if(ll.feature.properties[nameProp]===targetName)
                 highlight(ll,'correct');
