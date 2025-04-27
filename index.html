@@ -7,28 +7,37 @@
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <style>
-    body, html { margin:0; padding:0; height:100% }
-    #controls {
-      background: #f7f7f7;
-      padding: 12px;
-      text-align: center;
-      font-family: sans-serif;
-      font-size: 1.2em;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    #controls select, #controls button {
-      font-size: 1em;
-      padding: 8px 12px;
-    }
-    #map { width:100%; height:calc(100% - 70px) }
-    .incorrect { fill: rgba(255,0,0,0.5); }
-    .correct   { fill: rgba(0,255,0,0.5); }
-  </style>
+<style>
+  body, html { margin:0; padding:0; height:100%; }
+  #controls {
+    background: #f7f7f7;
+    padding: 12px;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 1.2em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 70px; /* 👈 fix height */
+    box-sizing: border-box;
+    overflow: hidden; /* 👈 prevent growing */
+  }
+  #controls select, #controls button {
+    font-size: 1em;
+    padding: 8px 12px;
+  }
+  #prompt {
+    flex-basis: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #map { width: 100%; height: calc(100% - 70px); }
+  .incorrect { fill: rgba(255,0,0,0.5); }
+  .correct { fill: rgba(0,255,0,0.5); }
+</style>
 </head>
 <body>
 
