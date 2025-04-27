@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Угадай район Будапешта</title>
+  <title>Find the Budapest district!</title>
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -17,8 +17,8 @@
 <body>
   <div id="map"></div>
   <div id="info">
-    <span id="prompt">Загружаем...</span>
-    <button id="next">Следующий район</button>
+    <span id="prompt">Loading...</span>
+    <button id="next">Next district</button>
   </div>
 
   <script
@@ -33,7 +33,6 @@
     const info = document.getElementById('prompt');
     const btnNext = document.getElementById('next');
 
-    // Загрузка GeoJSON
     fetch('Budapest_districts.json')
       .then(r => r.json())
       .then(json => {
@@ -62,15 +61,14 @@
         let name = feature.properties.name;
         if (name === targetName) {
           highlight(layer, 'correct');
-          info.textContent = 'Верно! Это ' + name;
+          info.textContent = 'Correct! It's ' + name;
           attempts = 0;
         } else {
           highlight(layer, 'incorrect');
-          info.textContent = 'Нет, это ' + name;
+          info.textContent = 'Incorrect! It's ' + name;
           attempts--;
           if (attempts === 0) {
-            info.textContent = 'Закончилось! Правильный: ' + targetName;
-            // Подсветим правильный
+            info.textContent = 'You have 0 attempts left! Correct location of: ' + targetName;
             districtsLayer.eachLayer(l => {
               if (l.feature.properties.name === targetName)
                 highlight(l, 'correct');
@@ -78,22 +76,20 @@
           }
         }
       });
-      layer.on('mouseout', () => {}); // не сбрасываем между ходами
+      layer.on('mouseout', () => {});
     }
 
     function startNewRound() {
-      // Сброс слоёв
       if (districtsLayer) map.removeLayer(districtsLayer);
       districtsLayer = L.geoJSON(data, {
         style: style,
         onEachFeature: onEachFeature
       }).addTo(map);
 
-      // настройка нового раунда
       let names = data.features.map(f => f.properties.name);
       targetName = names[Math.floor(Math.random()*names.length)];
       attempts = 3;
-      info.textContent = 'Найди район: ' + targetName + ' | Попыток: ' + attempts;
+      info.textContent = 'Find the district: ' + targetName + ' | Attempts: ' + attempts;
     }
 
     btnNext.addEventListener('click', startNewRound);
