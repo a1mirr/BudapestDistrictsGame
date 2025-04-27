@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Hungary region guessing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -10,11 +11,21 @@
     body, html { margin:0; padding:0; height:100% }
     #controls {
       background: #f7f7f7;
-      padding: 8px;
+      padding: 12px;
       text-align: center;
       font-family: sans-serif;
+      font-size: 1.2em;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    #map { width:100%; height:calc(100% - 50px) }
+    #controls select, #controls button {
+      font-size: 1em;
+      padding: 8px 12px;
+    }
+    #map { width:100%; height:calc(100% - 70px) }
     .incorrect { fill: rgba(255,0,0,0.5); }
     .correct   { fill: rgba(0,255,0,0.5); }
   </style>
@@ -27,16 +38,13 @@
       <option value="district">Budapest Districts</option>
       <option value="region">Hungary Regions</option>
     </select>
-    &nbsp;
     <button id="next">Next area</button>
-    &nbsp;
     <span id="prompt">Loading…</span>
   </div>
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // 1) Create two base‐layers: one with labels, one blank
     const withLabels = L.tileLayer(
       'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       { maxZoom:18, attribution:'© OSM' }
@@ -46,26 +54,24 @@
       { maxZoom:18, attribution:'© CartoDB' }
     );
 
-    // 2) Init the map with the "withLabels" layer
     const map = L.map('map', {
       center: [47.5,19.0],
       zoom: 11,
       layers: [ withLabels ]
     });
 
-    // 3) Add a built‐in layer switcher in the top‐right corner
     L.control.layers({
       'With Labels': withLabels,
       'Blank Map':  noLabels
     }).addTo(map);
 
-    // … then the rest of your geojson‐game code goes here:
     const modeSelect = document.getElementById('gameMode');
     const btnNext    = document.getElementById('next');
     const promptEl   = document.getElementById('prompt');
 
     let geojsonLayer=null, currentData=null,
-        nameProp='name', targetName='', attempts=3;
+        nameProp='name', targetName='', attempts=3,
+        correctClicked=false;
 
     function style(f){ return {color:'#555',weight:1,fill:'white',fillOpacity:0.5}; }
     function highlight(layer, cls){
@@ -73,23 +79,29 @@
       const el=layer.getElement(); if(el) el.classList.add(cls);
     }
     function onEachFeature(f,l){
-      l.on('click',()=>{
+      l.on('click',()=>{ 
+        if(attempts===0 && correctClicked){
+          startNewRound();
+          return;
+        }
         if(attempts===0) return;
         const nm=f.properties[nameProp];
         if(nm===targetName){
           highlight(l,'correct');
-          promptEl.textContent='✅ Correct! '+nm;
+          promptEl.textContent='✅ Correct! Click again to continue.';
           attempts=0;
+          correctClicked=true;
         } else {
           highlight(l,'incorrect');
           attempts--;
           promptEl.textContent=`❌ ${nm}. Attempts left: ${attempts}`;
           if(attempts===0){
-            promptEl.textContent=`🏁 No attempts left. It was ${targetName}`;
+            promptEl.textContent=`🏁 No attempts left. It was ${targetName}. Click correct region to continue.`;
             geojsonLayer.eachLayer(ll=>{
               if(ll.feature.properties[nameProp]===targetName)
                 highlight(ll,'correct');
             });
+            correctClicked=true;
           }
         }
       });
@@ -98,18 +110,19 @@
     function startNewRound(){
       if(!currentData) return;
       if(geojsonLayer) map.removeLayer(geojsonLayer);
-      geojsonLayer = L.geoJSON(currentData,{
+      geojsonLayer = L.geoJSON(currentData, {
         style:style, onEachFeature:onEachFeature
       }).addTo(map);
 
       const names = currentData.features.map(f=>f.properties[nameProp]);
       targetName = names[Math.floor(Math.random()*names.length)];
       attempts = 3;
+      correctClicked=false;
       promptEl.textContent = `🔎 Find: ${targetName} (Attempts: ${attempts})`;
     }
 
     function loadGame(){
-      const mode = modeSelect.value;let url, center, zoom;
+      const mode = modeSelect.value; let url, center, zoom;
       if(mode==='district'){
         url='Budapest_districts.json';
         center=[47.5,19.0]; zoom=11; nameProp='name';
@@ -135,7 +148,6 @@
     btnNext .addEventListener('click' , startNewRound);
 
     loadGame();
-
   </script>
 </body>
 </html>
