@@ -51,8 +51,8 @@ Live demo: https://a1mirr.github.io/BudapestDistrictsGame
 
 1. Clone the repo:  
    ```
-   git clone https://github.com/<your-username>/<your-repo-name>.git
-   cd <your-repo-name>
+   git clone https://github.com/a1mirr/BudapestDistrictsGame.git
+   cd BudapestDistrictsGame
    ```
 2. Open **index.html** in your browser:  
    - Double-click the file  
@@ -61,16 +61,6 @@ Live demo: https://a1mirr.github.io/BudapestDistrictsGame
      npx http-server . -c-1
      ```
      Then browse to http://localhost:8080
-
-### Deploying on GitHub Pages
-
-1. Push your code to GitHub under a repository named `<your-username>.github.io`  
-   _or_ enable Pages in Settings → Pages → select branch `main` (or `gh-pages`) and folder `/ (root)`.  
-2. Wait a minute and visit:  
-   ```
-   https://<your-username>.github.io/<your-repo-name>/
-   ```
-
 ---
 
 ## How It Works
@@ -92,3 +82,22 @@ Live demo: https://a1mirr.github.io/BudapestDistrictsGame
    - **Mode Selector**: choose between districts or regions  
    - **Next**: start a new round with a new random target  
    - **Map Layer Switcher**: toggle base maps (labels vs. blank)
+  
+  ## License
+
+[![License: CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+
+This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.  
+You are free to:
+
+• Share — copy and redistribute the material in any medium or format  
+• Adapt — remix, transform, and build upon the material  
+
+Under the following terms:
+
+• Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made.  
+• NonCommercial — You may not use the material for commercial purposes.  
+
+No additional restrictions.  
+See the full license text in [LICENSE](./LICENSE) or at  
+https://creativecommons.org/licenses/by-nc/4.0/
