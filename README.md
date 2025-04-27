@@ -1,4 +1,4 @@
-# Geo Guessing Game
+# Hungary regions guessing game
 
 An interactive web game that challenges you to identify geographic areas on a map.  
 Players can switch between two modes—guessing Budapest’s districts or Hungary’s regions—and even toggle a “blank map” (no labels) for extra difficulty.
