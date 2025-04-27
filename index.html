@@ -61,11 +61,11 @@
         let name = feature.properties.name;
         if (name === targetName) {
           highlight(layer, 'correct');
-          info.textContent = 'Correct! It's ' + name;
+          info.textContent = 'Correct! It\'s ' + name;
           attempts = 0;
         } else {
           highlight(layer, 'incorrect');
-          info.textContent = 'Incorrect! It's ' + name;
+          info.textContent = 'Incorrect! It\'s ' + name;
           attempts--;
           if (attempts === 0) {
             info.textContent = 'You have 0 attempts left! Correct location of: ' + targetName;
