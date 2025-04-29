@@ -99,5 +99,5 @@ Under the following terms:
 • NonCommercial — You may not use the material for commercial purposes.  
 
 No additional restrictions.  
-See the full license text in [LICENSE](./LICENSE) or at  
+See the full license text at  
 https://creativecommons.org/licenses/by-nc/4.0/
